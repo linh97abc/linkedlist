@@ -27,6 +27,7 @@ void slist_sort_add(struct slist_node **_begin,
         {
             _node->next = i_next;
             i_next = _node;
+            break;
         }
 
         i = i_next;
@@ -40,39 +41,14 @@ bool slist_sort(struct slist_node **_begin, int (*_key)(const struct slist_node 
     struct slist_node src_node = {.next = *_begin};
     struct slist_node ans_node = {.next = NULL};
     struct slist_node *i;
-    int val_max;
-    struct slist_node *i_max;
-    struct slist_node *i_max_pre, *i_pre;
 
-    while (src_node.next != NULL)
+    i = src_node.next;
+
+    while (i != NULL)
     {
-        i_pre = i_max = src_node.next;
-        i_max_pre = &src_node;
-        val_max = _key(i_max);
-
-        i = i_max->next;
-
-        while (i != NULL)
-        {
-            int val = _key(i);
-
-            if ((!_is_reverse && (val > val_max)) ||
-                _is_reverse && (val < val_max))
-            {
-                val_max = val;
-                i_max = i;
-                i_max_pre = i_pre;
-            }
-
-            i_pre = i;
-            i = i->next;
-        }
-
-        slist_fast_remove(i_max_pre, i_max);
-        slist_fast_add(&ans_node, i_max);
-        // i = src_node.next;
-        // slist_fast_remove(&src_node, i);
-        // slist_sort_add(&ans_node, i);
+        slist_fast_remove(&src_node, i);
+        slist_sort_add(&ans_node, i, _key, _is_reverse);
+        i = src_node.next;
     }
 
     *_begin = ans_node.next;

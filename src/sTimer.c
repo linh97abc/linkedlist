@@ -107,6 +107,8 @@ void sTimer_start(struct sTimer *pTimer)
                 i->next = pnode_to_add;
                 break;
             }
+
+            i = i->next;
         }
     }
 }
