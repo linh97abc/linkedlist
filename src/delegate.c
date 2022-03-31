@@ -1,19 +1,26 @@
 #include <linklist.h>
+#include <os_mem.h>
+#include <delegate.h>
 
-typedef void (*delegate_func_t)(void *);
-
-struct delegate
-{
-    struct slist_node *begin;
-    const char *name;
-};
+#define MAX_DELEGATE_NODE 128
 
 struct delegate_node
 {
     struct slist_node __node;
     delegate_func_t cb;
-    void *arg;
 };
+
+static OS_MEM *pMemDelegate;
+static struct delegate_node g_node[MAX_DELEGATE_NODE];
+
+int delegate_init(void)
+{
+    int8_t err;
+
+    pMemDelegate = OSMemCreate(g_node, MAX_DELEGATE_NODE, sizeof(struct delegate_node), &err);
+
+    return err;
+}
 
 void delegate_invoke(const struct delegate *_delegate)
 {
@@ -26,19 +33,28 @@ void delegate_invoke(const struct delegate *_delegate)
 
         if (cb)
         {
-            cb(pDelegate->arg);
+            cb(_delegate->arg);
         }
 
         i = i->next;
     }
 }
 
-bool delegate_add(struct delegate *_delegate, struct delegate_node *_node)
+bool delegate_add(struct delegate *_delegate, delegate_func_t cb)
 {
-    if (_node->cb)
+    if (cb)
     {
-        _node->__node.next = _delegate->begin;
-        _delegate->begin = &_node->__node;
+        int8_t err;
+        struct delegate_node *node = (struct delegate_node *)OSMemGet(pMemDelegate, &err);
+
+        if (err)
+        {
+            return false;
+        }
+
+        node->__node.next = _delegate->begin;
+        node->cb = cb;
+        _delegate->begin = &node->__node;
 
         return true;
     }
@@ -46,23 +62,31 @@ bool delegate_add(struct delegate *_delegate, struct delegate_node *_node)
     return false;
 }
 
-bool delegate_remove(struct delegate *_delegate, struct delegate_node *_node)
+bool delegate_remove(struct delegate *_delegate, delegate_func_t cb)
 {
-    struct slist_node *pnode_to_remove = &_node->__node;
     struct slist_node manager = {_delegate->begin};
     struct slist_node *i = &manager;
+    struct delegate_node *pnode = CONTAINER_OF(i->next, struct delegate_node, __node);
 
-    while (i->next && i->next == pnode_to_remove)
+    while (i->next)
     {
-        slist_fast_remove(i, i->next);
-        _delegate->begin = manager.next;
+        if (pnode->cb == cb)
+        {
+            slist_fast_remove(i, i->next);
+            _delegate->begin = manager.next;
+            OSMemPut(pMemDelegate, pnode);
 
-        return true;
+            return true;
+        }
+
+        i = i->next;
+        pnode = CONTAINER_OF(i->next, struct delegate_node, __node);
     }
 
     return false;
 }
 
+#if 0
 extern struct delegate g_delegate[];
 extern unsigned int g_size;
 
@@ -92,3 +116,5 @@ bool subcrise_remove(const char *s, struct delegate_node *_node)
 {
     return subcrise_find_and_do(s, _node, delegate_remove);
 }
+
+#endif
