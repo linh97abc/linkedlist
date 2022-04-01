@@ -7,7 +7,7 @@
 struct delegate_node
 {
     struct slist_node __node;
-    delegate_func_t cb;
+    void (*cb)(void*);
 };
 
 static struct sys_mem memDelegate;
@@ -29,7 +29,7 @@ void delegate_invoke(const struct delegate *_delegate)
     while (i)
     {
         struct delegate_node *pDelegate = CONTAINER_OF(i, struct delegate_node, __node);
-        delegate_func_t cb = pDelegate->cb;
+        void (*cb)(void*) = pDelegate->cb;
 
         if (cb)
         {
@@ -40,7 +40,7 @@ void delegate_invoke(const struct delegate *_delegate)
     }
 }
 
-bool delegate_add(struct delegate *_delegate, delegate_func_t cb)
+bool delegate_add(struct delegate *_delegate, void (*cb)(void*))
 {
     if (cb)
     {
@@ -61,7 +61,7 @@ bool delegate_add(struct delegate *_delegate, delegate_func_t cb)
     return false;
 }
 
-bool delegate_remove(struct delegate *_delegate, delegate_func_t cb)
+bool delegate_remove(struct delegate *_delegate, void (*cb)(void*))
 {
     struct slist_node manager = {_delegate->begin};
     struct slist_node *i = &manager;

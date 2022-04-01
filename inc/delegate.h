@@ -7,8 +7,6 @@ extern "C" {
 
 #include <stdbool.h>
 
-typedef void (*delegate_func_t)(void *);
-
 struct delegate
 {
     struct slist_node *begin;
@@ -18,8 +16,8 @@ struct delegate
 
 int delegate_init(void);
 void delegate_invoke(const struct delegate *_delegate);
-bool delegate_add(struct delegate *_delegate, delegate_func_t cb);
-bool delegate_remove(struct delegate *_delegate, delegate_func_t cb);
+bool delegate_add(struct delegate *_delegate, void (*cb)(void*));
+bool delegate_remove(struct delegate *_delegate, void (*cb)(void*));
 
 #ifdef __cplusplus
 }
