@@ -15,9 +15,13 @@ struct delegate
 };
 
 int delegate_init(void);
+
+#define DELEGATE_DEFINE(_d) struct delegate _d = {NULL, NULL, NULL}
+
 void delegate_invoke(const struct delegate *_delegate);
 bool delegate_add(struct delegate *_delegate, void (*cb)(void*));
 bool delegate_remove(struct delegate *_delegate, void (*cb)(void*));
+bool delegate_delete(struct delegate *_delegate);
 
 #ifdef __cplusplus
 }

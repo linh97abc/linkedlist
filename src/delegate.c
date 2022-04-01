@@ -85,6 +85,22 @@ bool delegate_remove(struct delegate *_delegate, void (*cb)(void*))
     return false;
 }
 
+bool delegate_delete(struct delegate *_delegate)
+{
+    struct slist_node *i = _delegate->begin;
+    struct delegate_node *pnode;
+
+    while (i)
+    {
+        pnode = CONTAINER_OF(i, struct delegate_node, __node);
+        i = i->next;
+
+        sys_mem_put(&memDelegate, pnode);
+    }
+    
+    _delegate->begin = NULL;
+}
+
 #if 0
 extern struct delegate g_delegate[];
 extern unsigned int g_size;
