@@ -17,7 +17,7 @@ int delegate_init(void)
 {
     int8_t err;
 
-    pMemDelegate = OSMemCreate(g_node, MAX_DELEGATE_NODE, sizeof(struct delegate_node), &err);
+    pMemDelegate = sys_mem_create(g_node, MAX_DELEGATE_NODE, sizeof(struct delegate_node), &err);
 
     return err;
 }
@@ -45,7 +45,7 @@ bool delegate_add(struct delegate *_delegate, delegate_func_t cb)
     if (cb)
     {
         int8_t err;
-        struct delegate_node *node = (struct delegate_node *)OSMemGet(pMemDelegate, &err);
+        struct delegate_node *node = (struct delegate_node *)sys_mem_get(pMemDelegate, &err);
 
         if (err)
         {
@@ -74,7 +74,7 @@ bool delegate_remove(struct delegate *_delegate, delegate_func_t cb)
         {
             slist_fast_remove(i, i->next);
             _delegate->begin = manager.next;
-            OSMemPut(pMemDelegate, pnode);
+            sys_mem_put(pMemDelegate, pnode);
 
             return true;
         }
