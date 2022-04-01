@@ -1,5 +1,5 @@
 #include <linklist.h>
-#include <os_mem.h>
+#include <sys_mem.h>
 #include <delegate.h>
 
 #define MAX_DELEGATE_NODE 128
@@ -10,16 +10,16 @@ struct delegate_node
     delegate_func_t cb;
 };
 
-static OS_MEM *pMemDelegate;
+static struct sys_mem memDelegate;
 static struct delegate_node g_node[MAX_DELEGATE_NODE];
 
 int delegate_init(void)
 {
-    int8_t err;
+    struct sys_mem *pmem;
 
-    pMemDelegate = sys_mem_create(g_node, MAX_DELEGATE_NODE, sizeof(struct delegate_node), &err);
+    pmem = sys_mem_create(&memDelegate, g_node, sizeof(g_node), sizeof(struct delegate_node));
 
-    return err;
+    return (pmem != (void*)0);
 }
 
 void delegate_invoke(const struct delegate *_delegate)
@@ -44,10 +44,9 @@ bool delegate_add(struct delegate *_delegate, delegate_func_t cb)
 {
     if (cb)
     {
-        int8_t err;
-        struct delegate_node *node = (struct delegate_node *)sys_mem_get(pMemDelegate, &err);
+        struct delegate_node *node = (struct delegate_node *)sys_mem_get(&memDelegate);
 
-        if (err)
+        if (!node)
         {
             return false;
         }
@@ -74,7 +73,7 @@ bool delegate_remove(struct delegate *_delegate, delegate_func_t cb)
         {
             slist_fast_remove(i, i->next);
             _delegate->begin = manager.next;
-            sys_mem_put(pMemDelegate, pnode);
+            sys_mem_put(&memDelegate, pnode);
 
             return true;
         }

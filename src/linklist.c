@@ -26,7 +26,7 @@ void slist_sort_add(struct slist_node **_begin,
         if ((!_reverse && (val_next >= val)) || (_reverse && (val_next <= val)))
         {
             _node->next = i_next;
-            i_next = _node;
+            i->next = _node;
             break;
         }
 
@@ -39,7 +39,7 @@ void slist_sort_add(struct slist_node **_begin,
 bool slist_sort(struct slist_node **_begin, int (*_key)(const struct slist_node *), bool _is_reverse)
 {
     struct slist_node src_node = {.next = *_begin};
-    struct slist_node ans_node = {.next = NULL};
+    struct slist_node *pdes_node = NULL;
     struct slist_node *i;
 
     i = src_node.next;
@@ -47,11 +47,11 @@ bool slist_sort(struct slist_node **_begin, int (*_key)(const struct slist_node 
     while (i != NULL)
     {
         slist_fast_remove(&src_node, i);
-        slist_sort_add(&ans_node, i, _key, _is_reverse);
+        slist_sort_add(&pdes_node, i, _key, _is_reverse);
         i = src_node.next;
     }
 
-    *_begin = ans_node.next;
+    *_begin = pdes_node;
 }
 
 void slist_foreach(struct slist_node *const *_begin, void (*_func)(const struct slist_node *_node))
