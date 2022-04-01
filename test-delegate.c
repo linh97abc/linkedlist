@@ -37,5 +37,9 @@ int main()
     delegate_remove(&d, func3);
     delegate_invoke(&d);
 
+    delegate_delete(&d);
+
+    delegate_invoke(&d);
+
     return 0;
 }
